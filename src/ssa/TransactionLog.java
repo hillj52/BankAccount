@@ -15,7 +15,8 @@ public class TransactionLog {
 	}
 	
 	public String toString() {
-		String sb = "";
+		String sb = "Transaction Log:\n" +
+	                "-----------------------\n";
 		for (int i=0;i<log.size();i++) {
 			sb += log.get(i) + "\n";
 		}

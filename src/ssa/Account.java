@@ -6,34 +6,59 @@ public class Account {
 	 * Used to generate account ID's as needed
 	 * increments by 100 every time a new account is created
 	 */
-	private static int idGenner = 100;
+	private static int idGenner = 155;
+	
+	/*
+	 * Used to format the output string to 2 decimal places
+	 */
+	private static final String DOLLAR_FORMAT = "%.2f";
 	
 	private int id;	//Unique ID created at time of account creation, cannot be changed
 	private double balance;
 	private String description;
 	private TransactionLog log;
 	
-	public Account(double balance, String description, TransactionLog log) {
-		this.id = idGenner;
-		idGenner += 100; //Increment the idGenner for the next instance of class
-		this.balance = balance;
+	public Account(int id, String description) {
+		this.setId(id);
+		this.setBalance(0);
 		this.description = description;
-		this.log = log;
+		this.log = TransactionLog.getInstance();
+	}
+	
+	public Account(String description) {
+		this(idGenner++,description);
+	}
+	
+	public Account() {
+		this (idGenner++,"");
 	}
 	
 	public int getId() {
 		return this.id;
 	}
 	
+	private void setId(int id) {
+		if (id > 0) {
+			this.id = id;
+		} else {
+			this.id = idGenner;
+		}
+	}
+	
 	public double getBalance() {
 		return this.balance;
+	}
+	
+	private void setBalance(double balance) {
+		if (balance >= 0)
+			this.balance = balance;
 	}
 	
 	/*
 	 * Returns the balance as a String rounded to 2 decimal places
 	 */
 	public String getBalanceString() {
-		return format(balance);
+		return String.format(DOLLAR_FORMAT,balance);
 	}
 	
 	public String getDescription() {
@@ -45,25 +70,17 @@ public class Account {
 	}
 	
 	/*
-	 * Returns the amount input as a String rounded to 2 decimal places
-	 */
-	private String format(double d) {
-		return String.format("%.2f", d);
-	}
-	
-	/*
 	 * Checks to ensure the amount deposited is positive
 	 * then completes the transaction and returns the new
 	 * account balance after processing the deposit
 	 */
 	public double deposit(double amount) {
-		System.out.println("Depositing $" + format(amount) + " in account number " + id);
 		if (amount < 0) {
-			log.addTransaction(new Deposit(id,amount,false));
+			log.addTransaction(new DepositRecord(id,amount,false));
 			return balance;
 		}
 		balance += amount;
-		log.addTransaction(new Deposit(id,amount,true));
+		log.addTransaction(new DepositRecord(id,amount,true));
 		return balance;
 	}
 	
@@ -74,20 +91,16 @@ public class Account {
 	 * returns the balance of the account after the transaction
 	 */
 	public double withdraw(double amount) {
-		System.out.println("Attempting to withdraw $" + format(amount) + " from account number " + id);
 		if (amount < 0) {
-			System.out.println("Failed: Withdrawl must be positive amount");
-			log.addTransaction(new Withdrawl(id,amount,false));
+			log.addTransaction(new WithdrawlRecord(id,amount,false));
 			return balance;
 		} else if (amount > balance) {
-			System.out.println("Failed: Insufficient funds! Account only has $" + 
-					getBalanceString() + " available for withdrawl");
-			log.addTransaction(new Withdrawl(id,amount,false));
+			System.out.println("Failed: Insufficient funds!");
+			log.addTransaction(new WithdrawlRecord(id,amount,false));
 			return balance;
 		} else {
-			System.out.println("Withdrawl succesful");
 			balance -= amount;
-			log.addTransaction(new Withdrawl(id,amount,true));
+			log.addTransaction(new WithdrawlRecord(id,amount,true));
 			return balance;
 		}
 	}
@@ -99,36 +112,39 @@ public class Account {
 	 * to the destination account, returning the balance of 
 	 * the first account after the transfer is complete
 	 */
-	public double transferTo(double amount,Account destination) {
-		System.out.println("Attempting to transfer $" + format(amount) + 
-				" to account number " + destination.getId());
+	public double transferTo(Account destination, double amount) {
 		if(amount < 0) {
-			System.out.println("Failed: Transfer amount must be positive");
-			log.addTransaction(new Transfer(id,destination.getId(),amount,false));
+			log.addTransaction(new TransferRecord(id,destination.getId(),amount,false));
 			return balance;
 		} else if (amount > balance) {
-			System.out.println("Failed: Insufficient funds! Account only has $" + 
-					getBalanceString() + " available for transfer");
-			log.addTransaction(new Transfer(id,destination.getId(),amount,false));
+			System.out.println("Failed: Insufficient funds!");
+			log.addTransaction(new TransferRecord(id,destination.getId(),amount,false));
 			return balance;
 		} else {
 			balance -= amount;
 			destination.xferDeposit(amount);
-			System.out.println("Transfer succesful");
-			log.addTransaction(new Transfer(id,destination.getId(),amount,true));
+			log.addTransaction(new TransferRecord(id,destination.getId(),amount,true));
 			return balance;
 		}
+	}
+	
+	public void transferFrom(Account source, double amount) {
+		source.transferTo(this, amount);
+	}
+	
+	public String print() {
+		return "Account " + this.id + " balance is $" + this.getBalanceString();
 	}
 	
 	/*
 	 * Used to facilitate the transfer function
 	 */
 	private void xferDeposit(double amount) {
-		balance += amount;
+		this.balance += amount;
 	}
 	
 	public String toString() {
-		return "Account Id: " + id +"\nDescription: "
-				+ description + "\nBalance: $" + getBalanceString() + "\n";
+		return "Account Id: " + this.id +"\nDescription: "
+				+ this.description + "\nBalance: $" + this.getBalanceString() + "\n";
 	}
 }

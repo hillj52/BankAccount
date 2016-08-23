@@ -1,6 +1,13 @@
 package ssa;
 
-public abstract class Transaction {
+/*
+ * Just a log record of the transaction
+ * does not actually perform any part of
+ * any transaction.
+ * 
+ * JUST A LOG RECORD!
+ */
+public abstract class TransactionRecord {
 
 	private static int codeGenner = 1;
 	
@@ -10,7 +17,7 @@ public abstract class Transaction {
 	private int accountId;
 	private boolean wasCompleted;
 	
-	public Transaction(int accountId, double amount, boolean wasCompleted) {
+	public TransactionRecord(int accountId, double amount, boolean wasCompleted) {
 		transactionId = codeGenner++;
 		this.amount = amount;
 		this.accountId = accountId;

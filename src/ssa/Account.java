@@ -6,12 +6,12 @@ public class Account {
 	 * Used to generate account ID's as needed
 	 * increments by 100 every time a new account is created
 	 */
-	private static int idGenner = 155;
+	protected static int idGenner = 155;
 	
 	/*
 	 * Used to format the output string to 2 decimal places
 	 */
-	private static final String DOLLAR_FORMAT = "%.2f";
+	protected static final String DOLLAR_FORMAT = "%.2f";
 	
 	private int id;	//Unique ID created at time of account creation, cannot be changed
 	private double balance;

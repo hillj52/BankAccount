@@ -1,5 +1,7 @@
 package ssa;
 
+import java.util.ArrayList;
+
 public class Account {
 
 	/*
@@ -132,10 +134,6 @@ public class Account {
 		source.transferTo(this, amount);
 	}
 	
-	public String print() {
-		return "Account " + this.id + " balance is $" + this.getBalanceString();
-	}
-	
 	/*
 	 * Used to facilitate the transfer function
 	 */
@@ -143,8 +141,139 @@ public class Account {
 		this.balance += amount;
 	}
 	
+	public String print() {
+		return this.toString();
+	}
+	
 	public String toString() {
-		return "Account Id: " + this.id +"\nDescription: "
-				+ this.description + "\nBalance: $" + this.getBalanceString() + "\n";
+		return "Account " + this.id + " balance is $" + this.getBalanceString();
+	}
+}
+
+/*
+ * Singleton class used for logging all
+ * transactions across all accounts,
+ * does not perform any part of any transaction
+ * simply provides logging functionality
+ */
+class TransactionLog {
+
+	private static TransactionLog instance = null;
+	
+	private ArrayList<TransactionRecord> log;
+	
+	private TransactionLog() {
+		log = new ArrayList<TransactionRecord>();
+	}
+	
+	public static TransactionLog getInstance() {
+		if (instance == null) {
+			instance = new TransactionLog();
+		}
+		return instance;
+	}
+	
+	public void addTransaction(TransactionRecord t) {
+		log.add(t);
+	}
+	
+	public String toString() {
+		String sb = "Transaction Log:\n" +
+	                "-----------------------\n";
+		for (int i=0;i<log.size();i++) {
+			sb += log.get(i) + "\n";
+		}
+		return sb;
+	}
+}
+
+/*
+ * Just a log record of the transaction
+ * does not actually perform any part of
+ * any transaction.
+ * 
+ * JUST A LOG RECORD!
+ */
+abstract class TransactionRecord {
+
+	private static int codeGenner = 1;
+	
+	private int transactionId;
+	private double amount;
+	protected String type;
+	private int accountId;
+	private boolean wasCompleted;
+	
+	public TransactionRecord(int accountId, double amount, boolean wasCompleted) {
+		transactionId = codeGenner++;
+		this.amount = amount;
+		this.accountId = accountId;
+		this.wasCompleted = wasCompleted;
+	}
+	
+	protected String completed() {
+		if (wasCompleted) {
+			return "Completed";
+		} else {
+			return "Failed";
+		}
+	}
+	
+	public String toString() {
+		return "Transaction: " + transactionId + 
+				"\nType: " + completed() + " " + type + 
+				"\nAmount: " + amount + "\nAccount: " + accountId + "\n";
+	}
+}
+
+/*
+ * Just a log record of the transaction
+ * does not actually perform any part of
+ * any transaction.
+ * 
+ * JUST A LOG RECORD!
+ */
+class TransferRecord extends TransactionRecord {
+
+	private int destinationId;
+	
+	public TransferRecord(int sourceId, int destinationId, double amount, boolean wasCompleted) {
+		super(sourceId,amount,wasCompleted);
+		this.type = "Transfer";
+		this.destinationId = destinationId;
+	}
+	
+	public String toString() {
+		return super.toString() + "To account: " + destinationId + "\n";
+	}
+}
+
+/*
+ * Just a log record of the transaction
+ * does not actually perform any part of
+ * any transaction.
+ * 
+ * JUST A LOG RECORD!
+ */
+class WithdrawlRecord extends TransactionRecord {
+	
+	public WithdrawlRecord(int accountId, double amount, boolean wasCompleted) {
+		super(accountId,amount,wasCompleted);
+		this.type = "Withdrawl";
+	}
+}
+
+/*
+ * Just a log record of the transaction
+ * does not actually perform any part of
+ * any transaction.
+ * 
+ * JUST A LOG RECORD!
+ */
+class DepositRecord extends TransactionRecord {
+	
+	public DepositRecord(int accountId, double amount, boolean wasCompleted) {
+		super(accountId,amount,wasCompleted);
+		this.type = "Deposit";
 	}
 }

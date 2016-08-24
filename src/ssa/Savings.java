@@ -48,6 +48,6 @@ public class Savings extends Account {
 	}
 	
 	public String toString() {
-		return "Savings " + super.toString();
+		return "Savings " + super.toString() + ", Interest Rate is " + this.printInterestRate();
 	}
 }
